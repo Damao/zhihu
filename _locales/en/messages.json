@@ -1,0 +1,14 @@
+{"zhihucheck_name": {
+    "message": "ZhiHu"
+}, "zhihucheck_description": {
+    "message": "Displays the number of unread messages in ZhiHu. You can also click the button to open Zhihu."
+}, "zhihucheck_node_error": {
+    "message": "Error: feed retrieved, but no &lt;fullcount&gt; node found"
+}, "zhihucheck_exception": {
+    "message": "exception: $1",
+    "placeholders": {
+        "1": {
+            "content": "$1"
+        }
+    }
+}}
