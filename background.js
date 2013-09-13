@@ -12,6 +12,7 @@ var pollIntervalMax = 60;  // 1 hour
 var requestTimeout = 1000 * 2;  // 2 seconds
 var rotation = 0;
 var loadingAnimation = new LoadingAnimation();
+var permission = 7; //options 1 2 4
 
 // Legacy support for pre-event-pages.
 var oldChromeVersion = !chrome.runtime;
@@ -72,16 +73,22 @@ LoadingAnimation.prototype.stop = function () {
 };
 
 function updateIcon() {
+    if (permission == 0) {
+        chrome.browserAction.setIcon({path: "img/zhihu_logged_in.png"});
+        chrome.browserAction.setBadgeBackgroundColor({color: [190, 190, 190, 230]});
+        chrome.browserAction.setBadgeText({text: ""});
+        return;
+    }
     if (!localStorage.hasOwnProperty('unreadCount')) {
-        chrome.browserAction.setIcon({path: "zhihu_not_logged_in.png"});
+        chrome.browserAction.setIcon({path: "img/zhihu_not_logged_in.png"});
         chrome.browserAction.setBadgeBackgroundColor({color: [190, 190, 190, 230]});
         chrome.browserAction.setBadgeText({text: "?"});
     } else if (localStorage.unreadCount == "0") {
-        chrome.browserAction.setIcon({path: "zhihu_not_logged_in.png"});
+        chrome.browserAction.setIcon({path: "img/zhihu_not_logged_in.png"});
         chrome.browserAction.setBadgeBackgroundColor({color: [190, 190, 190, 230]});
         chrome.browserAction.setBadgeText({text: ""});
     } else {
-        chrome.browserAction.setIcon({path: "zhihu_logged_in.png"});
+        chrome.browserAction.setIcon({path: "img/zhihu_logged_in.png"});
         chrome.browserAction.setBadgeBackgroundColor({color: [208, 0, 24, 255]});
         chrome.browserAction.setBadgeText({
             text: localStorage.unreadCount != "0" ? localStorage.unreadCount : ""
@@ -137,7 +144,14 @@ function startRequest(params) {
         }
     );
 }
-
+function getOptions() {
+    if (!localStorage.hasOwnProperty('options')) {
+        localStorage["options"] = '1,1,1';
+        return [1, 1, 1];
+    } else {
+        return localStorage.options.split(',');
+    }
+}
 function getInboxCount(onSuccess, onError) {
     var xhr = new XMLHttpRequest();
     var abortTimerId = window.setTimeout(function () {
@@ -163,15 +177,54 @@ function getInboxCount(onSuccess, onError) {
 
     try {
         xhr.onreadystatechange = function () {
-            console.log(xhr);
             if (xhr.readyState != 4)
                 return;
             if (xhr.responseText) {
-                var responseJSON = JSON.parse("[" + xhr.responseText + "]");
-                var responseArray = responseJSON[0][1].toString();
+                var responseJSON = JSON.parse(xhr.responseText);
+//                var responseJSON = JSON.parse('["noti7",[1,2,4]]');
+                var responseArray = responseJSON[1].toString();
                 responseArray = responseArray.split(",").map(Number);
                 if (responseArray) {
-                    handleSuccess(responseArray[0] + responseArray[1] + responseArray[2]);
+                    localStorage.msg1 = responseArray[0];
+                    localStorage.msg2 = responseArray[1];
+                    localStorage.msg3 = responseArray[2];
+                    var currentOptions = getOptions();
+                    if (currentOptions[0] == 0) {
+                        permission = permission - 1;
+                    }
+                    if (currentOptions[1] == 0) {
+                        permission = permission - 2;
+                    }
+                    if (currentOptions[2] == 0) {
+                        permission = permission - 4;
+                    }
+                    switch (permission) {
+                        case 7:
+                            handleSuccess(responseArray[0] + responseArray[1] + responseArray[2]);
+                            break;
+                        case 6:
+                            handleSuccess(responseArray[1] + responseArray[2]);
+                            break;
+                        case 5:
+                            handleSuccess(responseArray[0] + responseArray[2]);
+                            break;
+                        case 4:
+                            handleSuccess(responseArray[2]);
+                            break;
+                        case 3:
+                            handleSuccess(responseArray[0] + responseArray[1]);
+                            break;
+                        case 2:
+                            handleSuccess(responseArray[1]);
+                            break;
+                        case 1:
+                            handleSuccess(responseArray[0]);
+                            break;
+                        case 0:
+                            handleSuccess(0);
+                            break;
+                    }
+
                     return;
                 } else {
                     console.error(chrome.i18n.getMessage("zhihucheck_node_error"));
@@ -184,8 +237,8 @@ function getInboxCount(onSuccess, onError) {
         xhr.onerror = function () {
             handleError();
         };
-
-        xhr.open("GET", getMsgUrl(), true);
+        var timeStamp = +new Date();
+        xhr.open("GET", getMsgUrl() + '?' + timeStamp, true);
         xhr.send(null);
     } catch (e) {
         console.error(chrome.i18n.getMessage("zhihucheck_exception", e));

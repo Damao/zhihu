@@ -1,25 +1,26 @@
 {
-  "background": {
-    "persistent": false,
-    "page": "background.html"
-  },
-  "browser_action": {
-    "default_icon": "zhihu_not_logged_in.png"
-  },
-  "default_locale": "en",
-  "description": "__MSG_zhihucheck_description__",
-  "icons": {
-      "16": "zhihu-logo_16.png",
-      "48": "zhihu-logo_48.png",
-      "128": "zhihu-logo_128.png"
-  },
-  "name": "__MSG_zhihucheck_name__",
-  "permissions": [
-    "alarms",
-    "tabs",
-    "webNavigation",
-    "*://*.zhihu.com/"
-   ],
-  "version": "0.3.0",
-  "manifest_version": 2
+    "background": {
+        "persistent": false,
+        "page": "background.html"
+    },
+    "browser_action": {
+        "default_icon": "img/zhihu_not_logged_in.png"
+    },
+    "default_locale": "en",
+    "description": "__MSG_zhihucheck_description__",
+    "icons": {
+        "16": "img/zhihu-logo_16.png",
+        "48": "img/zhihu-logo_48.png",
+        "128": "img/zhihu-logo_128.png"
+    },
+    "name": "__MSG_zhihucheck_name__",
+    "permissions": [
+        "alarms",
+        "tabs",
+        "webNavigation",
+        "*://*.zhihu.com/"
+    ],
+    "options_page": "options.html",
+    "version": "1.0.0",
+    "manifest_version": 2
 }
