@@ -12,3 +12,4 @@
 别忘了打星星喔么么哒
 
 [Chrome 商店.知乎扩展插件](https://chrome.google.com/webstore/detail/zhihu/ngppfgdncadgjcpgdknacogoaghebhde)
+[Flat UI](http://designmodo.github.io/Flat-UI/)
