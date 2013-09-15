@@ -11,4 +11,7 @@
             "content": "$1"
         }
     }
-}}
+}, "zhihumsg_name": {
+    "message": "Activity($1)'+'Friends($2)'+'Vote($3)"
+}
+}

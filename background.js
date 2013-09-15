@@ -188,6 +188,7 @@ function getInboxCount(onSuccess, onError) {
                     localStorage.msg1 = responseArray[0];
                     localStorage.msg2 = responseArray[1];
                     localStorage.msg3 = responseArray[2];
+                    updateTitle(responseArray[0],responseArray[1],responseArray[2]);
                     var currentOptions = getOptions();
                     if (currentOptions[0] == 0) {
                         permission = permission - 1;
@@ -253,6 +254,12 @@ function updateUnreadCount(count) {
     updateIcon();
     if (changed)
         animateFlip();
+}
+
+function updateTitle(msg1,msg2,msg3){
+    var msg = [msg1, msg2, msg3];
+    var title=chrome.i18n.getMessage("zhihumsg_name", msg);
+    chrome.browserAction.setTitle({title:title});
 }
 
 
