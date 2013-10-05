@@ -1,17 +1,31 @@
-{"zhihucheck_name": {
-    "message": "知乎"
-}, "zhihucheck_description": {
-    "message": "显示知乎未读消息,您可以点击图标快速打开知乎."
-}, "zhihucheck_node_error": {
-    "message": "\u9519\u8bef\uff1a\u7cfb\u7edf\u5df2\u68c0\u7d22\u4f9b\u7a3f\uff0c\u4f46\u672a\u53d1\u73b0 &lt;fullcount&gt; \u8282\u70b9"
-}, "zhihucheck_exception": {
-    "message": "\u5f02\u5e38\uff1a$1",
-    "placeholders": {
-        "1": {
-            "content": "$1"
+{
+    "zhihucheck_name": {
+        "message": "知乎"
+    },
+    "zhihucheck_description": {
+        "message": "显示知乎未读消息,您可以点击图标快速打开知乎."
+    },
+    "zhihucheck_node_error": {
+        "message": "\u9519\u8bef\uff1a\u7cfb\u7edf\u5df2\u68c0\u7d22\u4f9b\u7a3f\uff0c\u4f46\u672a\u53d1\u73b0 &lt;fullcount&gt; \u8282\u70b9"
+    },
+    "zhihucheck_exception": {
+        "message": "\u5f02\u5e38\uff1a$1",
+        "placeholders": {
+            "1": {
+                "content": "$1"
+            }
         }
+    },
+    "zhihumsg_title": {
+        "message": "知乎"
+    },
+    "zhihumsg_content1": {
+        "message": "动态($1)"
+    },
+    "zhihumsg_content2": {
+        "message": "好友($1)"
+    },
+    "zhihumsg_content3": {
+        "message": "赞同($1)"
     }
-}, "zhihumsg_name": {
-    "message": "动态($1) 好友($2) 赞同($3)"
-}
 }

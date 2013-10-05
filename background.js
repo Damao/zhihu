@@ -181,14 +181,23 @@ function getInboxCount(onSuccess, onError) {
                 return;
             if (xhr.responseText) {
                 var responseJSON = JSON.parse(xhr.responseText);
-//                var responseJSON = JSON.parse('["noti7",[1,2,4]]');
+//                var responseJSON = JSON.parse('["noti7",[1,2,7]]');
                 var responseArray = responseJSON[1].toString();
                 responseArray = responseArray.split(",").map(Number);
+                var lastResponseArray = localStorage["lastResponseArray"];
+//                console.log('lastResponseArray = ', lastResponseArray);
+//                console.log('responseArray.toString() = ', responseArray.toString());
+                if (lastResponseArray == responseArray.toString()) {
+                    console.log('nothing changed,break my heart;');
+                    localStorage["hasChanged"] = false;
+                } else {
+                    localStorage["lastResponseArray"] = responseArray;
+                    localStorage["hasChanged"] = true;
+                }
                 if (responseArray) {
                     localStorage.msg1 = responseArray[0];
                     localStorage.msg2 = responseArray[1];
                     localStorage.msg3 = responseArray[2];
-                    updateTitle(responseArray[0],responseArray[1],responseArray[2]);
                     var currentOptions = getOptions();
                     if (currentOptions[0] == 0) {
                         permission = permission - 1;
@@ -202,27 +211,35 @@ function getInboxCount(onSuccess, onError) {
                     switch (permission) {
                         case 7:
                             handleSuccess(responseArray[0] + responseArray[1] + responseArray[2]);
+                            updateTitle(responseArray[0], responseArray[1], responseArray[2]);
                             break;
                         case 6:
                             handleSuccess(responseArray[1] + responseArray[2]);
+                            updateTitle(0, responseArray[1], responseArray[2]);
                             break;
                         case 5:
                             handleSuccess(responseArray[0] + responseArray[2]);
+                            updateTitle(responseArray[0], 0, responseArray[2]);
                             break;
                         case 4:
                             handleSuccess(responseArray[2]);
+                            updateTitle(0, 0, responseArray[2]);
                             break;
                         case 3:
                             handleSuccess(responseArray[0] + responseArray[1]);
+                            updateTitle(responseArray[0], responseArray[1], 0);
                             break;
                         case 2:
                             handleSuccess(responseArray[1]);
+                            updateTitle(0, responseArray[1], 0);
                             break;
                         case 1:
                             handleSuccess(responseArray[0]);
+                            updateTitle(responseArray[0], 0, 0);
                             break;
                         case 0:
                             handleSuccess(0);
+                            updateTitle(0);
                             break;
                     }
 
@@ -256,10 +273,55 @@ function updateUnreadCount(count) {
         animateFlip();
 }
 
-function updateTitle(msg1,msg2,msg3){
-    var msg = [msg1, msg2, msg3];
-    var title=chrome.i18n.getMessage("zhihumsg_name", msg);
-    chrome.browserAction.setTitle({title:title});
+function updateTitle(msg1, msg2, msg3) {
+    var contents = "";
+    var content1 = chrome.i18n.getMessage("zhihumsg_content1", [msg1]);
+    var content2 = chrome.i18n.getMessage("zhihumsg_content2", [msg2]);
+    var content3 = chrome.i18n.getMessage("zhihumsg_content3", [msg3]);
+    var title = chrome.i18n.getMessage("zhihumsg_title");
+
+    if (msg1 != 0 && msg1 != undefined) {
+        contents += ' ' + content1;
+    } else {
+        msg1 = 0
+    }
+    if (msg2 != 0 && msg2 != undefined) {
+        contents += ' ' + content2;
+    } else {
+        msg2 = 0
+    }
+    if (msg3 != 0 && msg3 != undefined) {
+        contents += ' ' + content3;
+    } else {
+        msg3 = 0
+    }
+    chrome.browserAction.setTitle({title: contents});
+    var currentOptions = getOptions();
+    console.log('currentOptions[3] == 1', currentOptions[3] == 1, 'msg1 + msg2 + msg3', (msg1 + msg2 + msg3) != "0", 'localStorage.hasChanged=="true"', localStorage.hasChanged == "true");
+    if (currentOptions[3] == 1 && (msg1 + msg2 + msg3) != "0" && localStorage.hasChanged == "true") {
+        console.log("start notification");
+        // Create a simple text notification:
+        var notification = webkitNotifications.createNotification(
+            'img/zhihu-logo_48.png',  // icon url - can be relative
+            title,  // notification title
+            contents  // notification body text
+        );
+        notification.onclick = function () {
+            goToInbox();
+            if (notification) {
+                notification.cancel();
+            }
+        };
+        var notificationCloseTimeout = 5000;
+        if (notificationCloseTimeout != 0) {
+            setTimeout(function () {
+                if (notification) {
+                    notification.cancel();
+                }
+            }, notificationCloseTimeout);
+        }
+        notification.show();
+    }
 }
 
 

@@ -13,14 +13,18 @@
         "48": "img/zhihu-logo_48.png",
         "128": "img/zhihu-logo_128.png"
     },
+    "web_accessible_resources": [
+        "img/zhihu-logo_48.png"
+    ],
     "name": "__MSG_zhihucheck_name__",
     "permissions": [
         "alarms",
         "tabs",
         "webNavigation",
+        "notifications",
         "*://*.zhihu.com/"
     ],
     "options_page": "options.html",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "manifest_version": 2
 }

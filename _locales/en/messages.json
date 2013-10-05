@@ -1,17 +1,31 @@
-{"zhihucheck_name": {
-    "message": "ZhiHu"
-}, "zhihucheck_description": {
-    "message": "Displays the number of unread messages in ZhiHu. You can also click the button to open Zhihu."
-}, "zhihucheck_node_error": {
-    "message": "Error: feed retrieved, but no &lt;fullcount&gt; node found"
-}, "zhihucheck_exception": {
-    "message": "exception: $1",
-    "placeholders": {
-        "1": {
-            "content": "$1"
+{
+    "zhihucheck_name": {
+        "message": "ZhiHu"
+    },
+    "zhihucheck_description": {
+        "message": "Displays the number of unread messages in ZhiHu. You can also click the button to open Zhihu."
+    },
+    "zhihucheck_node_error": {
+        "message": "Error: feed retrieved, but no &lt;fullcount&gt; node found"
+    },
+    "zhihucheck_exception": {
+        "message": "exception: $1",
+        "placeholders": {
+            "1": {
+                "content": "$1"
+            }
         }
+    },
+    "zhihumsg_title": {
+        "message": "ZhiHu"
+    },
+    "zhihumsg_content1": {
+        "message": "Activity($1)"
+    },
+    "zhihumsg_content2": {
+        "message": "Friend($1)"
+    },
+    "zhihumsg_content3": {
+        "message": "Vote($1)"
     }
-}, "zhihumsg_name": {
-    "message": "Activity($1)'+'Friends($2)'+'Vote($3)"
-}
 }

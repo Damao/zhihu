@@ -1,12 +1,16 @@
 function getOptions() {
     if (!localStorage.hasOwnProperty('options')) {
-        localStorage["options"] = '1,1,1';
-        return [1, 1, 1];
+        localStorage["options"] = '1,1,1,1';
+        return [1, 1, 1, 1];
     } else {
         return localStorage.options.split(',');
     }
 }
 var currentOpitons = getOptions();
+if(currentOpitons.length<document.getElementsByClassName("switch").length){ //  update from 3 to 5 options
+    localStorage["options"] = '1,1,1,1';
+    window.location.reload();
+}
 function isSwitch(order) {
     if (currentOpitons[order] == 1) {
         document.getElementById('option' + order).className = 'switch-on switch-animate';
@@ -29,7 +33,7 @@ function setSwitch(i) {
         updateOptions();
     }
 }
-for (var i = 0; i < 3; i++) {
+for (var i = 0; i < document.getElementsByClassName("switch").length; i++) {
     isSwitch(i);
     setSwitch(i);
 }
