@@ -299,7 +299,6 @@ function updateTitle(msg1, msg2, msg3) {
     var currentOptions = getOptions();
     console.log('currentOptions[3] == 1', currentOptions[3] == 1, 'msg1 + msg2 + msg3', (msg1 + msg2 + msg3) != "0", 'localStorage.hasChanged=="true"', localStorage.hasChanged == "true");
     if (currentOptions[3] == 1 && (msg1 + msg2 + msg3) != "0" && localStorage.hasChanged == "true") {
-        console.log("start notification");
         // Create a simple text notification:
         var notification = webkitNotifications.createNotification(
             'img/zhihu-logo_48.png',  // icon url - can be relative
@@ -312,7 +311,17 @@ function updateTitle(msg1, msg2, msg3) {
                 notification.cancel();
             }
         };
-        var notificationCloseTimeout = 10000;
+        function getNotificationCloseTimeout(){
+            var timer=localStorage.notificationCloseTimeout;
+            if(timer){
+                return timer;
+            }else{
+                localStorage["notificationCloseTimeout"]=10;
+                return 10;
+            }
+        }
+        var notificationCloseTimeout = getNotificationCloseTimeout()*1000;
+        console.log('notificationCloseTimeout',notificationCloseTimeout);
         if (notificationCloseTimeout != 0) {
             setTimeout(function () {
                 if (notification) {
@@ -321,6 +330,7 @@ function updateTitle(msg1, msg2, msg3) {
             }, notificationCloseTimeout);
         }
         notification.show();
+        console.log("start notification");
     }
 }
 
