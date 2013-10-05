@@ -312,7 +312,7 @@ function updateTitle(msg1, msg2, msg3) {
                 notification.cancel();
             }
         };
-        var notificationCloseTimeout = 5000;
+        var notificationCloseTimeout = 10000;
         if (notificationCloseTimeout != 0) {
             setTimeout(function () {
                 if (notification) {
