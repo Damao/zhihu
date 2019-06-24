@@ -19,10 +19,19 @@ var oldChromeVersion = !chrome.runtime;
 var requestTimerId;
 
 function getZhihuUrl() {
-    return "http://www.zhihu.com";
+    return "https://www.zhihu.com";
 }
 function getMsgUrl() {
-    return getZhihuUrl() + '/noti7/new';
+    return getZhihuUrl() + '/api/v4/notifications/v2/vote_thank?limit=100';
+}
+
+function getVoteThankUrl() {
+    var timeStamp = +new Date();
+    return getZhihuUrl() + '/api/v4/notifications/v2/vote_thank?limit=100&offset=' + timeStamp;
+}
+
+function getFollowUrl() {
+    return getZhihuUrl() + '/api/v4/notifications/v2/follow?limit=100';
 }
 
 function isZhihuUrl(url) {
@@ -48,7 +57,7 @@ LoadingAnimation.prototype.paintFrame = function () {
     if (this.current_ >= this.maxDot_)
         text += "";
 
-    chrome.browserAction.setBadgeText({text: text});
+    chrome.browserAction.setBadgeText({ text: text });
     this.current_++;
     if (this.current_ == this.maxCount_)
         this.current_ = 0;
@@ -74,22 +83,22 @@ LoadingAnimation.prototype.stop = function () {
 
 function updateIcon() {
     if (permission == 0) {
-        chrome.browserAction.setIcon({path: "img/zhihu_logged_in.png"});
-        chrome.browserAction.setBadgeBackgroundColor({color: [190, 190, 190, 230]});
-        chrome.browserAction.setBadgeText({text: ""});
+        chrome.browserAction.setIcon({ path: "img/zhihu_logged_in.png" });
+        chrome.browserAction.setBadgeBackgroundColor({ color: [190, 190, 190, 230] });
+        chrome.browserAction.setBadgeText({ text: "" });
         return;
     }
     if (!localStorage.hasOwnProperty('unreadCount')) {
-        chrome.browserAction.setIcon({path: "img/zhihu_not_logged_in.png"});
-        chrome.browserAction.setBadgeBackgroundColor({color: [190, 190, 190, 230]});
-        chrome.browserAction.setBadgeText({text: "?"});
+        chrome.browserAction.setIcon({ path: "img/zhihu_not_logged_in.png" });
+        chrome.browserAction.setBadgeBackgroundColor({ color: [190, 190, 190, 230] });
+        chrome.browserAction.setBadgeText({ text: "?" });
     } else if (localStorage.unreadCount == "0") {
-        chrome.browserAction.setIcon({path: "img/zhihu_not_logged_in.png"});
-        chrome.browserAction.setBadgeBackgroundColor({color: [190, 190, 190, 230]});
-        chrome.browserAction.setBadgeText({text: ""});
+        chrome.browserAction.setIcon({ path: "img/zhihu_not_logged_in.png" });
+        chrome.browserAction.setBadgeBackgroundColor({ color: [190, 190, 190, 230] });
+        chrome.browserAction.setBadgeText({ text: "" });
     } else {
-        chrome.browserAction.setIcon({path: "img/zhihu_logged_in.png"});
-        chrome.browserAction.setBadgeBackgroundColor({color: [208, 0, 24, 255]});
+        chrome.browserAction.setIcon({ path: "img/zhihu_logged_in.png" });
+        chrome.browserAction.setBadgeBackgroundColor({ color: [208, 0, 24, 255] });
         chrome.browserAction.setBadgeText({
             text: localStorage.unreadCount != "0" ? localStorage.unreadCount : ""
         });
@@ -114,7 +123,7 @@ function scheduleRequest() {
         console.log('Creating alarm');
         // Use a repeating alarm so that it fires again if there was a problem
         // setting the next alarm.
-        chrome.alarms.create('refresh', {periodInMinutes: delay});
+        chrome.alarms.create('refresh', { periodInMinutes: delay });
     }
 }
 
@@ -174,95 +183,101 @@ function getInboxCount(onSuccess, onError) {
             onError();
         invokedErrorCallback = true;
     }
+    responseArray = [0, 0, 0]
+    fillUnReadMsgCount(getVoteThankUrl(), 2);
+    fillUnReadMsgCount(getFollowUrl(), 1);
 
-    try {
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState != 4)
-                return;
-            if (xhr.responseText) {
-                var responseJSON = JSON.parse(xhr.responseText);
-//                var responseJSON = JSON.parse('["noti7",[1,2,7]]');
-                var responseArray = responseJSON[1].toString();
-                responseArray = responseArray.split(",").map(Number);
-                var lastResponseArray = localStorage["lastResponseArray"];
-//                console.log('lastResponseArray = ', lastResponseArray);
-//                console.log('responseArray.toString() = ', responseArray.toString());
-                if (lastResponseArray == responseArray.toString()) {
-                    console.log('nothing changed,break my heart;');
-                    localStorage["hasChanged"] = false;
-                } else {
-                    localStorage["lastResponseArray"] = responseArray;
-                    localStorage["hasChanged"] = true;
-                }
-                if (responseArray) {
-                    localStorage.msg1 = responseArray[0];
-                    localStorage.msg2 = responseArray[1];
-                    localStorage.msg3 = responseArray[2];
-                    var currentOptions = getOptions();
-                    if (currentOptions[0] == 0) {
-                        permission = permission - 1;
-                    }
-                    if (currentOptions[1] == 0) {
-                        permission = permission - 2;
-                    }
-                    if (currentOptions[2] == 0) {
-                        permission = permission - 4;
-                    }
-                    switch (permission) {
-                        case 7:
-                            handleSuccess(responseArray[0] + responseArray[1] + responseArray[2]);
-                            updateTitle(responseArray[0], responseArray[1], responseArray[2]);
-                            break;
-                        case 6:
-                            handleSuccess(responseArray[1] + responseArray[2]);
-                            updateTitle(0, responseArray[1], responseArray[2]);
-                            break;
-                        case 5:
-                            handleSuccess(responseArray[0] + responseArray[2]);
-                            updateTitle(responseArray[0], 0, responseArray[2]);
-                            break;
-                        case 4:
-                            handleSuccess(responseArray[2]);
-                            updateTitle(0, 0, responseArray[2]);
-                            break;
-                        case 3:
-                            handleSuccess(responseArray[0] + responseArray[1]);
-                            updateTitle(responseArray[0], responseArray[1], 0);
-                            break;
-                        case 2:
-                            handleSuccess(responseArray[1]);
-                            updateTitle(0, responseArray[1], 0);
-                            break;
-                        case 1:
-                            handleSuccess(responseArray[0]);
-                            updateTitle(responseArray[0], 0, 0);
-                            break;
-                        case 0:
-                            handleSuccess(0);
-                            updateTitle(0);
-                            break;
-                    }
 
+    function fillUnReadMsgCount(remoteURL, msgIndex) {
+        try {
+            console.log("remoteURL:" + remoteURL)
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState != 4)
                     return;
-                } else {
-                    console.error(chrome.i18n.getMessage("zhihucheck_node_error"));
+                if (xhr.responseText) {
+                    var responseJSON = JSON.parse(xhr.responseText);
+                    var responseData = responseJSON["data"];
+                    var unReadMsgCount = responseData.filter((item) => !item.is_read).length;
+                    responseArray[msgIndex] = unReadMsgCount;
+                    fillLocalStorage();
                 }
-            }
-
+                handleError();
+                return;
+            };
+            xhr.onerror = function () {
+                handleError();
+            };
+            xhr.open("GET", remoteURL, true);
+            xhr.send(null);
+        } catch (e) {
+            console.error(chrome.i18n.getMessage("zhihucheck_exception", e));
             handleError();
-        };
+        }
+    }
 
-        xhr.onerror = function () {
-            handleError();
-        };
-        var timeStamp = +new Date();
-        xhr.open("GET", getMsgUrl() + '?' + timeStamp, true);
-        xhr.send(null);
-    } catch (e) {
-        console.error(chrome.i18n.getMessage("zhihucheck_exception", e));
-        handleError();
+    function fillLocalStorage() {
+        var lastResponseArray = localStorage["lastResponseArray"];
+        if (lastResponseArray == responseArray.toString()) {
+            console.log('nothing changed,break my heart;');
+            localStorage["hasChanged"] = false;
+        } else {
+            localStorage["lastResponseArray"] = responseArray;
+            localStorage["hasChanged"] = true;
+        }
+        localStorage.msg1 = responseArray[0];
+        localStorage.msg2 = responseArray[1];
+        localStorage.msg3 = responseArray[2];
+        var currentOptions = getOptions();
+        if (currentOptions[0] == 0) {
+            permission = permission - 1;
+        }
+        if (currentOptions[1] == 0) {
+            permission = permission - 2;
+        }
+        if (currentOptions[2] == 0) {
+            permission = permission - 4;
+        }
+        switch (permission) {
+            case 7:
+                handleSuccess(responseArray[0] + responseArray[1] + responseArray[2]);
+                updateTitle(responseArray[0], responseArray[1], responseArray[2]);
+                break;
+            case 6:
+                handleSuccess(responseArray[1] + responseArray[2]);
+                updateTitle(0, responseArray[1], responseArray[2]);
+                break;
+            case 5:
+                handleSuccess(responseArray[0] + responseArray[2]);
+                updateTitle(responseArray[0], 0, responseArray[2]);
+                break;
+            case 4:
+                handleSuccess(responseArray[2]);
+                updateTitle(0, 0, responseArray[2]);
+                break;
+            case 3:
+                handleSuccess(responseArray[0] + responseArray[1]);
+                updateTitle(responseArray[0], responseArray[1], 0);
+                break;
+            case 2:
+                handleSuccess(responseArray[1]);
+                updateTitle(0, responseArray[1], 0);
+                break;
+            case 1:
+                handleSuccess(responseArray[0]);
+                updateTitle(responseArray[0], 0, 0);
+                break;
+            case 0:
+                handleSuccess(0);
+                updateTitle(0);
+                break;
+        }
     }
 }
+
+
+
+
 
 
 function updateUnreadCount(count) {
@@ -295,7 +310,7 @@ function updateTitle(msg1, msg2, msg3) {
     } else {
         msg3 = 0
     }
-    chrome.browserAction.setTitle({title: contents});
+    chrome.browserAction.setTitle({ title: contents });
     var currentOptions = getOptions();
     console.log('currentOptions[3] == 1', currentOptions[3] == 1, 'msg1 + msg2 + msg3', (msg1 + msg2 + msg3) != "0", 'localStorage.hasChanged=="true"', localStorage.hasChanged == "true");
     if (currentOptions[3] == 1 && (msg1 + msg2 + msg3) != "0" && localStorage.hasChanged == "true") {
@@ -311,17 +326,17 @@ function updateTitle(msg1, msg2, msg3) {
                 notification.cancel();
             }
         };
-        function getNotificationCloseTimeout(){
-            var timer=localStorage.notificationCloseTimeout;
-            if(timer){
+        function getNotificationCloseTimeout() {
+            var timer = localStorage.notificationCloseTimeout;
+            if (timer) {
                 return timer;
-            }else{
-                localStorage["notificationCloseTimeout"]=10;
+            } else {
+                localStorage["notificationCloseTimeout"] = 10;
                 return 10;
             }
         }
-        var notificationCloseTimeout = getNotificationCloseTimeout()*1000;
-        console.log('notificationCloseTimeout',notificationCloseTimeout);
+        var notificationCloseTimeout = getNotificationCloseTimeout() * 1000;
+        console.log('notificationCloseTimeout', notificationCloseTimeout);
         if (notificationCloseTimeout != 0) {
             setTimeout(function () {
                 if (notification) {
@@ -363,13 +378,15 @@ function drawIconAtRotation() {
         -Math.ceil(canvas.height / 2));
     canvasContext.restore();
 
-    chrome.browserAction.setIcon({imageData: canvasContext.getImageData(0, 0,
-        canvas.width, canvas.height)});
+    chrome.browserAction.setIcon({
+        imageData: canvasContext.getImageData(0, 0,
+            canvas.width, canvas.height)
+    });
 }
 function activeInbox(tabId) {
     if (localStorage.unreadCount != "0") {
         chrome.tabs.executeScript(tabId,
-            {code: "document.getElementById('zh-top-nav-count-wrap').click()"});
+            { code: "document.getElementById('zh-top-nav-count-wrap').click()" });
     }
 }
 function goToInbox() {
@@ -379,14 +396,14 @@ function goToInbox() {
             if (tab.url && isZhihuUrl(tab.url)) {
                 console.log('Found Zhihu tab: ' + tab.url + '. ' +
                     'Focusing and refreshing count...');
-                chrome.tabs.update(tab.id, {selected: true});
-                startRequest({scheduleRequest: false, showLoadingAnimation: false});
+                chrome.tabs.update(tab.id, { selected: true });
+                startRequest({ scheduleRequest: false, showLoadingAnimation: false });
                 activeInbox(tab.id);
                 return;
             }
         }
         console.log('Could not find Zhihu tab. Creating one...');
-        chrome.tabs.create({url: getZhihuUrl()});
+        chrome.tabs.create({ url: getZhihuUrl() });
         activeInbox(null);
     });
 }
@@ -394,11 +411,11 @@ function goToInbox() {
 function onInit() {
     console.log('onInit');
     localStorage.requestFailureCount = 0;  // used for exponential backoff
-    startRequest({scheduleRequest: true, showLoadingAnimation: true});
+    startRequest({ scheduleRequest: true, showLoadingAnimation: true });
     if (!oldChromeVersion) {
         // (mpcomplete): We should be able to remove this now, but leaving it
         // for a little while just to be sure the refresh alarm is working nicely.
-        chrome.alarms.create('watchdog', {periodInMinutes: 5});
+        chrome.alarms.create('watchdog', { periodInMinutes: 5 });
     }
 }
 
@@ -409,7 +426,7 @@ function onAlarm(alarm) {
     if (alarm && alarm.name == 'watchdog') {
         onWatchdog();
     } else {
-        startRequest({scheduleRequest: true, showLoadingAnimation: false});
+        startRequest({ scheduleRequest: true, showLoadingAnimation: false });
     }
 }
 
@@ -420,7 +437,7 @@ function onWatchdog() {
         } else {
             console.log('Refresh alarm doesn\'t exist!? ' +
                 'Refreshing now and rescheduling.');
-            startRequest({scheduleRequest: true, showLoadingAnimation: false});
+            startRequest({ scheduleRequest: true, showLoadingAnimation: false });
         }
     });
 }
@@ -437,7 +454,7 @@ var filters = {
     // (aa): Cannot use urlPrefix because all the url fields lack the protocol
     // part. See crbug.com/140238.
     url: [
-        {urlContains: getZhihuUrl().replace(/^https?\:\/\//, '')}
+        { urlContains: getZhihuUrl().replace(/^https?\:\/\//, '') }
     ]
 };
 
@@ -445,7 +462,7 @@ function onNavigate(details) {
     if (details.url && isZhihuUrl(details.url)) {
         console.log('Recognized Zhihu navigation to: ' + details.url + '.' +
             'Refreshing count...');
-        startRequest({scheduleRequest: false, showLoadingAnimation: false});
+        startRequest({ scheduleRequest: false, showLoadingAnimation: false });
     }
 }
 if (chrome.webNavigation && chrome.webNavigation.onDOMContentLoaded &&
@@ -464,7 +481,7 @@ chrome.browserAction.onClicked.addListener(goToInbox);
 if (chrome.runtime && chrome.runtime.onStartup) {
     chrome.runtime.onStartup.addListener(function () {
         console.log('Starting browser... updating icon.');
-        startRequest({scheduleRequest: false, showLoadingAnimation: false});
+        startRequest({ scheduleRequest: false, showLoadingAnimation: false });
         updateIcon();
     });
 } else {
@@ -474,7 +491,7 @@ if (chrome.runtime && chrome.runtime.onStartup) {
     // in a version of Chrome that has this problem.
     chrome.windows.onCreated.addListener(function () {
         console.log('Window created... updating icon.');
-        startRequest({scheduleRequest: false, showLoadingAnimation: false});
+        startRequest({ scheduleRequest: false, showLoadingAnimation: false });
         updateIcon();
     });
 }
