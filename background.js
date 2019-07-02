@@ -30,6 +30,10 @@ function getVoteThankUrl() {
     return getZhihuUrl() + '/api/v4/notifications/v2/vote_thank?limit=100&offset=' + timeStamp;
 }
 
+function getDefaultUrl() {
+    return getZhihuUrl() + '/api/v4/notifications/v2/default?limit=100';
+}
+
 function getFollowUrl() {
     return getZhihuUrl() + '/api/v4/notifications/v2/follow?limit=100';
 }
@@ -184,8 +188,10 @@ function getInboxCount(onSuccess, onError) {
         invokedErrorCallback = true;
     }
     responseArray = [0, 0, 0]
-    fillUnReadMsgCount(getVoteThankUrl(), 2);
+    fillUnReadMsgCount(getDefaultUrl(), 0);
     fillUnReadMsgCount(getFollowUrl(), 1);
+    fillUnReadMsgCount(getVoteThankUrl(), 2);
+
 
 
     function fillUnReadMsgCount(remoteURL, msgIndex) {
