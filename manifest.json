@@ -22,7 +22,7 @@
         "tabs",
         "webNavigation",
         "notifications",
-        "*://*.zhihu.com/"
+        "https://www.zhihu.com/"
     ],
     "options_page": "options.html",
     "version": "1.2.4",
